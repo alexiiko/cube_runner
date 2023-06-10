@@ -20,6 +20,8 @@ ground_rect = ground_surface_bigger.get_rect()
 platform_surface = pygame.image.load(os.path.join("OneDrive","Desktop","cube_runner","graphics", "platform.png")).convert_alpha()
 platform_rect = platform_surface.get_rect(center = (650,450))
 
+level_01 = True
+
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -32,12 +34,36 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(midbottom = (50, 550))
         self.gravity = 0
         self.fall_value = 0
+    
+    def platform_collision(self):
+        #print(platform_rect.bottom, platform_rect.top)
+        if self.rect.left < 725 and self.rect.right > 575:
+            #print(self.rect.bottom, platform_rect.top)
+            if self.rect.bottom <= 425:
+                #print(self.fall_value)
+                self.rect.bottom = platform_rect.top
+            if self.rect.top >= 475:
+                #print("under platform")
+                pass
 
     def increase_fall_value(self):
+        #print(self.fall_value)
         if self.rect.bottom < 550:
-            self.fall_value += 1
+            self.fall_value = 3
         if self.rect.bottom == 550: 
            self.fall_value = 0
+        if self.rect.left < 725 and self.rect.right > 575:
+            if self.rect.bottom >= platform_rect.top:
+                self.fall_value = 0
+
+    def movement(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+            self.rect.x += 5
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+            self.rect.x -= 5
+        if keys[pygame.K_SPACE] and self.fall_value <= 2 or keys[pygame.K_UP] and self.fall_value <= 2:
+            self.gravity = -20
 
     def border(self):
         if self.rect.right >= 800:
@@ -45,27 +71,21 @@ class Player(pygame.sprite.Sprite):
         if self.rect.left <= 0:
             self.rect.left = 0
 
-    def movement(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            self.rect.x += 10
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            self.rect.x -= 10
-        if keys[pygame.K_SPACE] and self.fall_value <= 0:
-            self.gravity = -20
         
 
     def fall(self):
+        print(self.gravity)
         self.gravity += 1
         self.rect.y += self.gravity
         if self.rect.bottom >= 550:
             self.rect.bottom = 550
-
-    def horizontal_collision(self):
-        None
+        if self.rect.left < 725 and self.rect.right > 575:
+            if self.rect.bottom <= 420:
+                self.rect.bottom = 425
+                self.gravity = -20
     
     def update(self):
-        self.horizontal_collision()
+        self.platform_collision()
         self.border()
         self.increase_fall_value()
         self.fall()
@@ -90,7 +110,8 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
-    
-    draw_window()
-    pygame.display.update()
-    clock.tick(60)
+
+    if level_01:
+        draw_window()
+        pygame.display.update()
+        clock.tick(120)
